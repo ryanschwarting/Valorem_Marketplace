@@ -15,6 +15,13 @@ contract NFT is ERC721URIStorage, Ownable, ERC2981 {
 
     //address of the NFT marketplace 
     address public contractAddress;
+    
+     // Mapping from token ID to owner address
+    mapping(uint256 => address) private _owners;
+
+    // Mapping owner address to token count
+    mapping(address => uint256) private _balances;
+
 
     constructor (uint96 _royaltyFeesInBips, address marketplaceAddress, string memory myName, string memory mySymbol) ERC721(myName, mySymbol) {
         contractAddress = marketplaceAddress;
