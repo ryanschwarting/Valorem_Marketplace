@@ -52,7 +52,7 @@ contract VLFMarketplace is ReentrancyGuard, Ownable {
         feePercent = _feePercent;
     }
 
-    function makeItem(IERC721 _nft, uint _tokenId, uint _price) external nonReentrant {
+    function listItem(IERC721 _nft, uint _tokenId, uint _price) external nonReentrant {
         require(_price > 0, "Price must be greater than zero");
         // increase itemCount
         itemCount ++;
