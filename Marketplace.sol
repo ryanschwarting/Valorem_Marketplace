@@ -5,13 +5,20 @@ import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
-contract Marketplace is ReentrancyGuard, Ownable {
+contract VLFMarketplace is ReentrancyGuard, Ownable {
     
     address payable public immutable feeAccount; // the account that recieves fees
     uint public feePercent; // the fee percentage on sales
     uint public itemCount; 
 
+    enum ListingStatus {
+        Active,
+        Sold,
+        Cancelled
+    }
+
     struct Item {
+        ListingStatus status;
         uint itemId;
         IERC721 nft;
         uint tokenId;
@@ -53,6 +60,7 @@ contract Marketplace is ReentrancyGuard, Ownable {
         _nft.transferFrom(msg.sender, address(this), _tokenId);
         // add new item to items mapping
         items[itemCount] = Item (
+            ListingStatus.Active,
             itemCount,
             _nft,
             _tokenId,
@@ -76,6 +84,7 @@ contract Marketplace is ReentrancyGuard, Ownable {
         require(_itemId > 0 && _itemId <= itemCount, "Item doesn't exist");
         require(msg.value >= _totalPrice, "Not enough ether to buy");
         require(!item.sold, "item already sold");
+        require(item.status == ListingStatus.Active, "Listing is not active");
         // pay seller and feeAccount
         item.seller.transfer(item.price);
         feeAccount.transfer(_totalPrice - item.price);
@@ -94,6 +103,15 @@ contract Marketplace is ReentrancyGuard, Ownable {
         );
     }
 
+     function cancelSale(uint _itemId) public {
+        Item storage item = items[_itemId];
+
+        require(msg.sender == item.seller, "Only seller can cancel listing");
+        require(item.status == ListingStatus.Active, "Listing is not active");
+        
+        item.status = ListingStatus.Cancelled;
+     }
+
     function getTotalPrice(uint _itemId) view public returns(uint) {
         return items[_itemId].price*(100 + feePercent/100);
     }
@@ -109,4 +127,3 @@ contract Marketplace is ReentrancyGuard, Ownable {
         feePercent = _feePercent;
     }
 }
-
