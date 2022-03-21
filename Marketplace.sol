@@ -110,6 +110,9 @@ contract VLFMarketplace is ReentrancyGuard, Ownable {
         require(item.status == ListingStatus.Active, "Listing is not active");
         
         item.status = ListingStatus.Cancelled;
+        
+        IERC721(item.nft).transferFrom(address(this), msg.sender, item.tokenId);
+
      }
 
     function getTotalPrice(uint _itemId) view public returns(uint) {
